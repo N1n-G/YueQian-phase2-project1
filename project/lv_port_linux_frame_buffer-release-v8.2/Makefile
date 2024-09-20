@@ -10,7 +10,7 @@ BIN = demo
 
 
 #Collect the files to compile
-MAINSRC = ./main.c ./my_lvgl_test/show_something_demo.c ./my_lvgl_test/source_han_sans_cn_normal_2.c
+MAINSRC = ./main.c ./src/show_something_demo.c ./src/source_han_sans_cn_normal_2.c
 
 # include $(LVGL_DIR)/lvgl/lvgl.mk
 # include $(LVGL_DIR)/lv_drivers/lv_drivers.mk

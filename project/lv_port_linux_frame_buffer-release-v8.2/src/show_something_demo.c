@@ -1,4 +1,4 @@
-#include "show_something_demo.h"
+#include "../inc/show_something_demo.h"
 
 int EXIT_MASK = 0;
 

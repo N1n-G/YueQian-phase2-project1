@@ -1,11 +1,4 @@
-#include "lvgl/lvgl.h"
-#include "lvgl/demos/lv_demos.h"
-#include "lv_drivers/display/fbdev.h"
-#include "lv_drivers/indev/evdev.h"
-#include <unistd.h>
-#include <pthread.h>
-#include <time.h>
-#include <sys/time.h>
+
 #include "my_lvgl_test/show_something_demo.h"
 
 #define DISP_BUF_SIZE (128 * 1024)
