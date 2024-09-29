@@ -1,5 +1,5 @@
+#include "inc/client.h"
 
-#include "my_lvgl_test/show_something_demo.h"
 
 #define DISP_BUF_SIZE (128 * 1024)
 
@@ -47,80 +47,42 @@ int main(void)
 
     /******************************** 以下为自己的代码 ********************************/
 
-    // if(Show_Gif_Demo() == false) {
-    //   printf("显示gif图片失败！\n");
-    //   return -1;
+    // 在这里调用动画函数
+    // start_animation(lv_scr_act());
+    
+    // P_DVI inf_heap = Dir_View_Init_Windows();
+    // if(inf_heap == (P_DVI)-1) {
+    //     printf("初始化失败！\n");
+    //     return -1;
     // }
 
-    // if(Show_IMG_Demo() == false) {
-    //   printf("显示img图片失败！\n");
-    //   return -1;
-    // }
-
-    // if(button_demo() == false) {
-    //   printf("显示按钮失败！\n");
-    //   return -1;
-    // }
-
-    // if(show_demo() == false) {
-    //   printf("屏幕显示失败！\n");
-    //   return -1;
+    // if(!Show_File_List(DEFAULET_PATH, inf_heap)) {
+    //     printf("显示文件列表失败！\n");
+    //     return -1;
     // }
 
 
-    // P_SBD sbd = (P_SBD)malloc(sizeof(SBD));
-    // if(sbd == (P_SBD)NULL)
-    // {
-    //   perror("malloc error \n");
-    //   return false;
-    // }
-    // memset(sbd, 0, sizeof(SBD));
-
-
-    // lv_obj_t *main_draw = List_Demo();
-
-    // if(main_draw == false)
-    // {
-    //   printf("显示页面失败 \n");
-    //   return -1;
-    // }
-
-    // P_DVI inf_heap = dir_view_init_windows();
-    // if(inf_heap == (P_DVI)-1)
-    // {
-    //   printf("目录浏览例程初始化失败！ \n");
-    //   return -1;
-    // }
-
-    // show_file_list(DEFAULT_SEARCH_PATH, inf_heap);
-
-    // if(Show_Check_Box_Demo() == false)
-    // {
-    //   printf("显示复选框失败！\n");
-    //   return -1;
-    // }
-
-    // if(Show_Slider_Demo() == false)
-    // {
-    //   printf("显示滑动条失败！\n");
-    //   return -1;
-    // }
-
-    P_DVI inf_heap = dir_view_init_windows();
-    if(inf_heap == (P_DVI)-1) {
-        printf("初始化失败！\n");
+    if(!Index_Page())
+    {
+        printf("显示Index失败!\n");
         return -1;
     }
-
-    if(!show_file_list(DEFAULET_PATH, inf_heap)) {
-        printf("显示文件列表失败！\n");
+    
+    init_client_list();
+    
+    if (!connect_to_server())
+    {
+        printf("连接服务器失败！\n");
         return -1;
     }
+    
+    // Show_Main_Page();
 
     /******************************** 以上为自己的代码 ********************************/
 
     /*Handle LitlevGL tasks (tickless mode)*/
     while(1) {
+        
         // pthread_mutex_lock(&sbd->mutex);
         lv_timer_handler();
         // pthread_mutex_unlock(&sbd->mutex);
