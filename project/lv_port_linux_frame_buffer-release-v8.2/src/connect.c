@@ -1,7 +1,7 @@
 #include "../inc/login_register.h"
 
 
-int client_socket; // 套接字全局变量，用于在按钮回调中发送数据到服务器
+// int client_socket; // 套接字全局变量，用于在按钮回调中发送数据到服务器
 
 // 设置套接字为非阻塞模式
 void set_socket_nonblocking(int socket)

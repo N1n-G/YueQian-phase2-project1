@@ -108,6 +108,10 @@ void handle_client(int client_sock)
         {
             send_file_list(client_sock); // 调用函数发送文件列表
         }
+        else if (strcmp(client_message, "weather") == 0) // 处理文件列表命令
+        {
+            send_weather_info(client_sock); // 调用函数发送文件列表
+        }
         // else
         // {
         //     send(client_sock, "无效的命令！", strlen("无效的命令！"), 0); // 处理未知命令

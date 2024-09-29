@@ -1,5 +1,5 @@
-#include "../../inc/client.h"
-#include "../../inc/color.h"
+#include "../../inc/weather.h"
+// #include "../../inc/color.h"
 
 int EXIT_MASK = 0;
 P_DVI inf_heap;
@@ -35,9 +35,11 @@ bool Dir_View_Init_Windows()
 
     // 创建时间显示标签
     time_label = lv_label_create(inf_heap->main_windows);
-    lv_obj_align(time_label, LV_ALIGN_BOTTOM_LEFT, 5, -5);
+    // lv_obj_align(time_label, LV_ALIGN_BOTTOM_LEFT, 5, -5);
+    lv_obj_set_pos(time_label, 10, 80);
     lv_timer_t * timer = lv_timer_create(update_time, 1000, NULL); // 每秒更新时间
 
+    // 首页内容显示
     lv_obj_t * notic_windows = lv_obj_create(inf_heap->main_windows);
     lv_obj_set_size(notic_windows, 450, 380);
     lv_obj_set_pos(notic_windows, 250, 70);
@@ -49,6 +51,9 @@ bool Dir_View_Init_Windows()
     lv_obj_set_style_text_color(notic_label, lv_color_hex(0xFF0000), LV_STATE_DEFAULT); // 设置红色
     lv_obj_set_pos(notic_label, 150, 130);
     lv_obj_set_style_bg_opa(notic_windows, LV_OPA_TRANSP, LV_PART_MAIN); // 设置按钮背景透明
+    lv_obj_t * head_pic = lv_gif_create(notic_windows);
+    lv_gif_set_src(head_pic, "S:/mnt/nfs/9_19_/YueQian-phase2-project1/project/lv_port_linux_frame_buffer-release-v8.2/res/pic/Gwen.gif");
+    lv_obj_center(head_pic);
 
     // 显示系统名字
     lv_obj_t * title_label = lv_label_create(inf_heap->main_windows);
@@ -59,10 +64,27 @@ bool Dir_View_Init_Windows()
     // lv_obj_set_style_text_color(title_label, lv_color_hex(0x0000FF), LV_STATE_DEFAULT); // 字体蓝色
     lv_obj_set_style_text_font(title_label, &source_han_sans_cn_normal_22, LV_STATE_DEFAULT);
 
+    // 创建天气小窗
+    inf_heap->weather_windows = lv_btn_create(inf_heap->main_windows);
+    lv_obj_set_size(inf_heap->weather_windows, 180, 70);
+    lv_obj_set_pos(inf_heap->weather_windows, 0, 0);
+    lv_obj_set_style_bg_opa(inf_heap->weather_windows, LV_OPA_TRANSP, LV_PART_MAIN); // 设置按钮背景透明
+    lv_obj_add_event_cb(inf_heap->weather_windows, show_weather_inf_press_task, LV_EVENT_CLICKED, NULL);
+    lv_obj_t * weather_icon = lv_img_create(inf_heap->weather_windows);
+    lv_obj_set_size(weather_icon, 50, 50);
+    lv_obj_set_pos(weather_icon, 5, 0);
+    lv_img_set_src(weather_icon, "S:/mnt/nfs/9_19_/YueQian-phase2-project1/project/lv_port_linux_frame_buffer-release-v8.2/res/icon/sunny_sun_cloud_weather_cloudy_icon_194267.png");
+    lv_obj_t * weather_label = lv_label_create(inf_heap->weather_windows);
+    lv_obj_set_size(weather_label, 50, 50);
+    lv_obj_set_pos(weather_label, 60, 15);
+    lv_label_set_text(weather_label, "天气");
+    lv_obj_set_style_text_font(weather_label, &source_han_sans_cn_normal_22, LV_STATE_DEFAULT);
+
+
     // 创建主功能目录
     inf_heap->head_list_windows = lv_list_create(inf_heap->main_windows);
-    lv_obj_set_size(inf_heap->head_list_windows, 165, 400);
-    lv_obj_set_pos(inf_heap->head_list_windows, 0, 80);
+    lv_obj_set_size(inf_heap->head_list_windows, 165, 380);
+    lv_obj_set_pos(inf_heap->head_list_windows, 0, 100);
     lv_obj_set_style_bg_opa(inf_heap->head_list_windows, LV_OPA_TRANSP, LV_PART_MAIN); // 设置列表半透明
     // lv_obj_set_style_opa(inf_heap->head_list_windows, LV_OPA_TRANSP, LV_PART_MAIN);  // 设置列表透明
     // lv_obj_set_style_bg_color(inf_heap->head_list_windows, lv_color_hex(0x87CEFA), LV_PART_MAIN);    // 天蓝色
@@ -175,6 +197,31 @@ bool Dir_View_Init_Windows()
     return true;
 }
 
+void show_weather_inf_press_task(void)
+{
+    // 去除网盘
+    if(inf_heap->sever_document != NULL) {
+        lv_obj_del(inf_heap->sever_document);
+        inf_heap->sever_document = NULL; // 防止悬挂指针
+    }
+
+    // 去除本地
+    if(inf_heap->lv_dir_list != NULL) {
+        lv_obj_del(inf_heap->lv_dir_list);
+        inf_heap->lv_dir_list = NULL; // 防止悬挂指针
+    }
+    if(inf_heap->lv_little_windows != NULL) {
+        lv_obj_del(inf_heap->lv_little_windows);
+        inf_heap->lv_little_windows = NULL; // 防止悬挂指针
+    }
+    
+    printf("显示天气信息! \n");
+    if (!show_weather_inf(inf_heap)) {
+        printf("显示天气信息失败! \n");
+        return false;
+    }
+    // return;
+}
 void sys_main_page_btn_press_task(lv_event_t * e)
 {
     int num_btn = (int)lv_event_get_user_data(e);
@@ -229,6 +276,22 @@ bool show_notice_funtion(char * search_path, P_DVI inf_heap)
         lv_obj_del(inf_heap->lv_little_windows);
         inf_heap->lv_little_windows = NULL; // 防止悬挂指针
     }
+    
+    // 去除天气界面
+    if(inf_heap->weather_info_windows != NULL) {
+        lv_obj_del(inf_heap->weather_info_windows);
+        inf_heap->weather_info_windows = NULL; // 防止悬挂指针
+    }
+    
+    if(current_label != NULL)
+    {
+        lv_obj_del(current_label);
+        current_label = NULL;
+    }
+    current_label = lv_label_create(inf_heap->main_windows);
+    lv_label_set_text(current_label, "首页");
+    lv_obj_set_pos(current_label, 10, 450);
+    lv_obj_set_style_text_font(current_label, &source_han_sans_cn_normal_2, LV_STATE_DEFAULT);
 
     return true;
 }
@@ -236,6 +299,7 @@ bool show_notice_funtion(char * search_path, P_DVI inf_heap)
 // 显示网盘文件列表
 bool show_sever_file_list(char * search_path, P_DVI inf_heap)
 {
+    // 去除本地
     if(inf_heap->lv_dir_list != NULL) {
         lv_obj_del(inf_heap->lv_dir_list);
         inf_heap->lv_dir_list = NULL; // 防止悬挂指针
@@ -245,6 +309,13 @@ bool show_sever_file_list(char * search_path, P_DVI inf_heap)
         inf_heap->lv_little_windows = NULL; // 防止悬挂指针
     }
 
+    // 去除天气界面
+    if(inf_heap->weather_info_windows != NULL) {
+        lv_obj_del(inf_heap->weather_info_windows);
+        inf_heap->weather_info_windows = NULL; // 防止悬挂指针
+    }
+    
+    // 刷新网盘
     if(inf_heap->sever_document != NULL) {
         lv_obj_del(inf_heap->sever_document);
         inf_heap->sever_document = NULL; // 防止悬挂指针
@@ -262,6 +333,17 @@ bool show_sever_file_list(char * search_path, P_DVI inf_heap)
         // fclose(file);
         return NULL;
     }
+    
+    if(current_label != NULL)
+    {
+        lv_obj_del(current_label);
+        current_label = NULL;
+    }
+    current_label = lv_label_create(inf_heap->main_windows);
+    lv_label_set_text(current_label, "网盘");
+    lv_obj_set_pos(current_label, 10, 450);
+    lv_obj_set_style_text_font(current_label, &source_han_sans_cn_normal_2, LV_STATE_DEFAULT);
+    
     int bytes_received;
     char sever_file_list[BUF_SIZE];
 
@@ -406,6 +488,14 @@ void download_file_from_server(const char * file_name)
     snprintf(request, sizeof(request), "download:%s", file_name); // 构建下载请求
     printf("request: %s\n", request);
     send(client_socket_download, request, strlen(request), 0);
+    
+    // 接收文件大小
+    if (recv(client_socket_download, &file_size, sizeof(file_size), 0) <= 0) {
+        perror("Failed to receive file size");
+        close(client_socket_download);
+        return;
+    }
+    printf("文件大小: %zu\n", file_size);
 
     // 创建本地文件路径
     char local_file_path[BUF_SIZE];
@@ -420,48 +510,24 @@ void download_file_from_server(const char * file_name)
     }
     printf("local_file: %d\n", local_file);
     
-    // 接收文件大小
-    if (recv(client_socket_download, &file_size, sizeof(file_size), 0) <= 0) {
-        perror("Failed to receive file size");
-        close(local_file);
-        close(client_socket_download);
-        return;
-    }
-    printf("文件大小: %zu\n", file_size);
-
-    
-    // 开始接收文件内容
-    while (total_received < file_size)
-    {
-        to_receive = file_size - total_received > BUF_SIZE ? BUF_SIZE : file_size - total_received;
-
-        // 接收指定大小的数据块
-        bytes_received = recv(client_socket_download, buffer, to_receive, 0);
-        if (bytes_received <= 0)
-        {
-            perror("File receive failed or connection closed");
-            break;
-        }
-
-        // 写入接收到的文件数据到本地文件
-        if (write(local_file, buffer, bytes_received) != bytes_received)
-        {
+    // 接收文件内容并写入本地文件
+    while (total_received < file_size && (bytes_received = recv(client_socket_download, buffer, sizeof(buffer), 0)) > 0) {
+        total_received += bytes_received;
+        if (write(local_file, buffer, bytes_received) != bytes_received) {
             perror("Failed to write data to file");
             close(local_file);
             close(client_socket_download);
             return;
         }
-        total_received += bytes_received;
-        printf("已接收: %zd / %zu\n", total_received, file_size);
+
+        printf("已接收 %zu / %zu 字节\n", total_received, file_size);
     }
 
-    if (total_received == file_size)
-    {
-        printf("文件传输完成，接收到 %zd 字节\n", total_received);
-    }
-    else
-    {
-        printf("文件传输未完成或失败，接收到 %zd 字节\n", total_received);
+    // 如果传输完成或服务器关闭连接
+    if (total_received == file_size) {
+        printf("文件传输完成\n");
+    } else if (bytes_received < 0) {
+        perror("File receive failed");
     }
 
     // 关闭文件和套接字
@@ -477,6 +543,8 @@ bool Show_File_List(char * search_path, P_DVI inf_heap)
 {
     printf("Show_File_List \n");
     // P_DVI inf_heap = inf_heap;
+
+    // 去除网盘
     if(inf_heap->sever_document != NULL) {
         lv_obj_del(inf_heap->sever_document);
         inf_heap->sever_document = NULL; // 防止悬挂指针
@@ -485,6 +553,13 @@ bool Show_File_List(char * search_path, P_DVI inf_heap)
 
     printf("Show_File_List ----- 1 \n");
 
+    // 去除天气界面
+    if(inf_heap->weather_info_windows != NULL) {
+        lv_obj_del(inf_heap->weather_info_windows);
+        inf_heap->weather_info_windows = NULL; // 防止悬挂指针
+    }
+
+    // 刷新本地
     if(inf_heap->lv_dir_list != NULL) {
         lv_obj_del(inf_heap->lv_dir_list);
         inf_heap->lv_dir_list = NULL; // 防止悬挂指针
@@ -505,6 +580,16 @@ bool Show_File_List(char * search_path, P_DVI inf_heap)
         lv_obj_set_size(inf_heap->lv_little_windows, 495, 440);
         lv_obj_set_pos(inf_heap->lv_little_windows, 305, 40);
     }
+    
+    if(current_label != NULL)
+    {
+        lv_obj_del(current_label);
+        current_label = NULL;
+    }
+    current_label = lv_label_create(inf_heap->main_windows);
+    lv_label_set_text(current_label, "本地");
+    lv_obj_set_pos(current_label, 10, 450);
+    lv_obj_set_style_text_font(current_label, &source_han_sans_cn_normal_2, LV_STATE_DEFAULT);
 
     printf("------ %s ------ \n", search_path);
     // 打开要检索的目录，初始目录是根目录

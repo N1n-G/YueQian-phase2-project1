@@ -9,7 +9,6 @@
 #include <pthread.h>
 #include <dirent.h> // 新增：用于目录操作
 #include <fcntl.h>  // 新增：用于文件操作
-// #include "cJSON.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <ifaddrs.h>
@@ -18,12 +17,14 @@
 #include <sys/stat.h>
 #include <netdb.h>
 
+#include "cJSON.h"  // 天气
+
 #include <bits/pthreadtypes.h>
 
 #define MAX_CLIENTS 10
 #define THREAD_POOL_SIZE 5
 #define BUFFER_SIZE 10240
-#define SERVER_PORT 7777
+#define SERVER_PORT 8888
 #define WEB_DISK_DIR "web_disk/" // 定义保存文件的路径
 
 

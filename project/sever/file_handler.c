@@ -176,16 +176,21 @@ void handle_file_download(int client_sock, const char *file_name)
     send(client_sock, &file_size, sizeof(file_size), 0);
     printf("文件大小已发送\n");
 
-    // 读取文件数据并发送给客户端，不需要等待客户端的确认
-    while ((bytes_read = fread(buffer, 1, sizeof(buffer), file)) > 0)
-    {
-        send(client_sock, buffer, bytes_read, 0);
-        printf("发送文件 %s 的 %ld 字节\n", file_name, bytes_read);
+    size_t total_sent = 0;
+
+    // 读取文件数据并发送给客户端
+    while ((bytes_read = fread(buffer, 1, sizeof(buffer), file)) > 0) {
+        if (send(client_sock, buffer, bytes_read, 0) <= 0) {
+            perror("Failed to send data");
+            break;
+        }
+        total_sent += bytes_read;
+        printf("已发送 %zu / %zu 字节\n", total_sent, file_size);
     }
 
     fclose(file);
+    close(client_sock);  // 在发送完文件后，关闭连接，通知客户端文件发送完毕。
     printf("文件 %s 已成功发送给客户端\n", file_name);
-    // close(client_sock); // 关闭连接以通知客户端文件传输已完成
 }
 
 // 新增：发送文件列表函数

@@ -20,6 +20,11 @@
 #include <fcntl.h>
 #include <sys/mman.h> //mmap
 #include <linux/input.h>
+#include <stdint.h>
+#include <strings.h>
+#include <semaphore.h>
+#include <netdb.h>
+#include <sys/select.h>
 
 #include <unistd.h>
 #include <dirent.h>
@@ -29,6 +34,9 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+// #include "weather.h"
+#include "cJSON.h"
+
 #include "../lvgl/lvgl.h"
 
 #define DEFAULET_PATH "/"
@@ -36,6 +44,7 @@
 LV_FONT_DECLARE(source_han_sans_cn_normal_2);
 LV_FONT_DECLARE(source_han_sans_cn_normal_22);
 // LV_FONT_DECLARE(source_han_sans_cn_normal_24);
+LV_FONT_DECLARE(lv_font_SiYuanRouHei_Regular_16_cjk);
 
 LV_FONT_DECLARE(lv_font_simsun_16_cjk);
 
@@ -50,6 +59,8 @@ lv_obj_t * selected_file_btns[MAX_SELECTED_FILES]; // 选中的文件按钮数�
 #define MAX_CLIENTS 100
 static char online_clients[MAX_CLIENTS][BUF_SIZE]; // 存放用户名和IP
 static int num_online_clients = 0;                 // 在线客户端数目
+
+lv_obj_t * current_label;
 
 // 结构体传递文件名给线程
 typedef struct
@@ -93,7 +104,7 @@ int connect_to_server();
 void confirm_download_cb(lv_event_t * e);
 void * download_file_thread(void * arg);
 void download_file_from_server(const char * file_name);
-
+void show_weather_inf_press_task(void);
 
 bool Index_Page();
 
@@ -153,14 +164,16 @@ extern app_pages_t app_pages;
 // } DVI, *P_DVI;
 typedef struct dir_view_inf
 {
-    lv_obj_t * main_windows;      // 主画布
-    lv_obj_t * sever_document;    // 网盘界面
-    lv_obj_t * head_list_windows; // 主功能目录
-    lv_obj_t * btn_back_to_index; // 返回主页按钮
-    lv_obj_t * lv_dir_list;       // 列表
-    lv_obj_t * lv_little_windows; // 右边小画布
+    lv_obj_t * main_windows;         // 主画布
+    lv_obj_t * sever_document;       // 网盘界面
+    lv_obj_t * head_list_windows;    // 主功能目录
+    lv_obj_t * weather_windows;      // 天气窗口
+    lv_obj_t * weather_info_windows; // 天气详细信息
+    lv_obj_t * btn_back_to_index;    // 返回主页按钮
+    lv_obj_t * lv_dir_list;          // 列表
+    lv_obj_t * lv_little_windows;    // 右边小画布
     // char list_dir_path[256];
-    
+
     // 存放链表头
     Node * list_head; // 链表头节点，用于存储目录或文件信息
 } DVI, *P_DVI;
@@ -184,12 +197,10 @@ bool show_notice_funtion(char * search_path, P_DVI inf_heap);
 void sys_main_page_btn_press_task(lv_event_t * e);
 bool show_sever_file_list(char * search_path, P_DVI inf_heap);
 
-
 // void * upload_file_thread(void * arg);
 // void upload_btn_press_task(lv_event_t * e);
 // void * download_file_thread(void * arg);
 // void download_btn_press_task(lv_event_t * e);
-
 
 bool Show_File_List(char * search_path, P_DVI inf_heap);
 bool show_file_view(P_DVI inf_heap, char * btn_text, struct tmp_btn_touch_inf * file_tmp_inf);
