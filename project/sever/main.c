@@ -8,13 +8,15 @@ pthread_rwlock_t client_list_lock;
 
 // 初始化服务器函数
 // 该函数初始化线程池、任务队列、检查 user_information 和 web_disk 目录是否存在，并写入日志
-void init_server()
+bool init_server()
 {
     init_client_list_lock();                   // 初始化客户端链表的读写锁
     task_queue = task_queue_init(MAX_CLIENTS); // 初始化任务队列
     check_and_create_web_disk();               // 检查并创建 web_disk 目录，用于存储上传/下载文件
     check_and_create_user_information_dir();   // 检查并创建 user_information 目录，用于存储用户信息文件
     log_message("Server initialized.");        // 记录服务器初始化日志
+
+    return true;
 }
 
 // 处理客户端消息的主函数
@@ -148,8 +150,14 @@ void *worker_thread(void *arg)
 // 创建服务器套接字，监听客户端连接，使用线程池并发处理多个客户端请求
 int main()
 {
-    init_server(); // 初始化服务器
 
+    // 初始化服务器
+    if(!init_server())
+    {
+        printf("初始化服务器失败!\n");
+        return -1;
+    }
+    
     int socket_desc, client_sock, c;
     struct sockaddr_in server, client;
     memset(&server, 0, sizeof(server));

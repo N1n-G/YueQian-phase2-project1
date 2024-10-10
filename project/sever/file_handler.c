@@ -172,24 +172,51 @@ void handle_file_download(int client_sock, const char *file_name)
     fseek(file, 0, SEEK_SET);
     printf("文件大小：%zu\n", file_size);
 
-    // 先发送文件大小
-    send(client_sock, &file_size, sizeof(file_size), 0);
+    // 发送文件大小给客户端，确保发送完整
+    if (send(client_sock, &file_size, sizeof(file_size), 0) != sizeof(file_size)) {
+        perror("Failed to send file size");
+        fclose(file);
+        close(client_sock);
+        return;
+    }
     printf("文件大小已发送\n");
+
+    // 等待客户端确认收到文件大小
+    char ack[10];
+    if (recv(client_sock, ack, sizeof(ack), 0) <= 0 || strcmp(ack, "READY") != 0) {
+        printf("客户端未确认文件大小\n");
+        fclose(file);
+        close(client_sock);
+        return;
+    }
 
     size_t total_sent = 0;
 
     // 读取文件数据并发送给客户端
     while ((bytes_read = fread(buffer, 1, sizeof(buffer), file)) > 0) {
-        if (send(client_sock, buffer, bytes_read, 0) <= 0) {
-            perror("Failed to send data");
-            break;
+        size_t bytes_left = bytes_read;
+        char *buffer_ptr = buffer;
+
+        // 确保将所有字节发送出去
+        while (bytes_left > 0) {
+            ssize_t bytes_sent = send(client_sock, buffer_ptr, bytes_left, 0);
+            if (bytes_sent <= 0) {
+                perror("Failed to send data");
+                fclose(file);
+                close(client_sock);
+                return;
+            }
+
+            bytes_left -= bytes_sent;
+            buffer_ptr += bytes_sent;
+            total_sent += bytes_sent;
         }
-        total_sent += bytes_read;
+
         printf("已发送 %zu / %zu 字节\n", total_sent, file_size);
     }
 
     fclose(file);
-    close(client_sock);  // 在发送完文件后，关闭连接，通知客户端文件发送完毕。
+    close(client_sock);  // 关闭连接通知客户端传输完毕
     printf("文件 %s 已成功发送给客户端\n", file_name);
 }
 

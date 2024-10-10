@@ -68,7 +68,11 @@ int main(void)
         return -1;
     }
     
-    init_client_list();
+    if(!init_client_list())
+    {
+        printf("初始化客户端列表失败!\n");
+        return -1;
+    }
     
     if (!connect_to_server())
     {

@@ -23,7 +23,7 @@ void set_socket_nonblocking(int socket)
 
 
 // 初始化客户端链表
-void init_client_list()
+bool init_client_list()
 {
     client_list = (P_CL)calloc(1,sizeof(CL));
     if(client_list == NULL)
@@ -33,6 +33,8 @@ void init_client_list()
     }
     client_list->head = NULL;
     pthread_mutex_init(&client_list->mutex, NULL);
+    
+    return true;
 }
 
 

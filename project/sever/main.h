@@ -16,6 +16,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <netdb.h>
+#include <time.h>
+#include <errno.h>
+#include <stdbool.h>
 
 #include "cJSON.h"  // 天气
 

@@ -10,7 +10,7 @@ BIN = 1sys
 
 
 #Collect the files to compile
-MAINSRC = ./main.c ./src/sys_main_page/sys_main_page.c ./src/sys_main_page/weather.c ./src/index_register_login/boot_anim.c ./src/index_register_login/index.c ./src/index_register_login/register.c ./src/index_register_login/login.c ./src/keyboard/keyboard.c ./src/connect.c ./src/client.c ./src/source_han_sans_cn_normal_2.c ./src/source_han_sans_cn_normal_22.c ./src/lv_font_SiYuanRouHei_Regular_16_cjk.c
+MAINSRC = ./main.c ./src/sys_main_page/sys_main_page.c ./src/sys_main_page/local_upload.c ./src/sys_main_page/web_disk.c ./src/sys_main_page/weather.c ./src/index_register_login/boot_anim.c ./src/index_register_login/index.c ./src/index_register_login/register.c ./src/index_register_login/login.c ./src/keyboard/keyboard.c ./src/connect.c ./src/source_han_sans_cn_normal_2.c ./src/source_han_sans_cn_normal_22.c ./src/lv_font_SiYuanRouHei_Regular_16_cjk.c
 
 # include $(LVGL_DIR)/lvgl/lvgl.mk
 # include $(LVGL_DIR)/lv_drivers/lv_drivers.mk
